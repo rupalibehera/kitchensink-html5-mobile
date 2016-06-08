@@ -2,24 +2,23 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "ruby-helloworld-sample",
+    "name": "pipelineproject",
     "creationTimestamp": null,
     "annotations": {
       "description": "This example shows how to create a simple ruby application in openshift origin v3",
-      "iconClass": "icon-ruby",
-      "tags": "instant-app,ruby,mysql"
+      "iconClass": "icon-jboss",
+      "tags": "instant-app,java,mysql"
     }
   },
   "objects": [
-
     {
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "sample-pipeline",
+        "name": "pipeline",
         "creationTimestamp": null,
         "labels": {
-          "name": "sample-pipeline"
+          "name": "pipeline"
         }
       },
       "spec": {
@@ -40,13 +39,13 @@
         "source": {
           "type": "Git",
           "git": {
-            "uri": "https://github.com/openshift/ruby-hello-world"
+            "uri": "https://github.com/xcoulon/openshift-kitchensink-html5-mobile"
           }
         },
         "strategy": {
           "type": "JenkinsPipeline",
           "jenkinsPipelineStrategy": {
-            "jenkinsfile": "node('agent') {\nstage 'build'\ndef builder = new com.openshift.jenkins.plugins.pipeline.OpenShiftBuilder(\"\", \"ruby-sample-build\", \"pipelineproject\", \"\", \"\", \"\", \"\", \"true\", \"\", \"\")\nstep builder\nstage 'deploy'\ndef deployer = new com.openshift.jenkins.plugins.pipeline.OpenShiftDeployer(\"\",\"frontend\",\"pipelineproject\",\"\",\"\")\nstep deployer\n}"
+            "jenkinsfile": "node('agent') {\nstage 'build'\ndef builder = new com.openshift.jenkins.plugins.pipeline.OpenShiftBuilder(\"\", \"${NAME}\", \"pipelineproject\", \"\", \"\", \"\", \"\", \"true\", \"\", \"\")\nstep builder\nstage 'deploy'\ndef deployer = new com.openshift.jenkins.plugins.pipeline.OpenShiftDeployer(\"\",\"${NAME}\",\"pipelineproject\",\"\",\"\")\nstep deployer\n}"
           }
         }
       }
@@ -55,7 +54,7 @@
       "kind": "Service",
       "apiVersion": "v1",
       "metadata": {
-        "name": "frontend",
+        "name": "${NAME}",
         "creationTimestamp": null
       },
       "spec": {
@@ -63,34 +62,30 @@
           {
             "name": "web",
             "protocol": "TCP",
-            "port": 5432,
+            "port": 8080,
             "targetPort": 8080,
             "nodePort": 0
           }
         ],
         "selector": {
-          "name": "frontend"
+          "name": "${NAME}"
         },
         "portalIP": "",
         "type": "ClusterIP",
         "sessionAffinity": "None"
-      },
-      "status": {
-        "loadBalancer": {}
       }
     },
     {
       "kind": "Route",
       "apiVersion": "v1",
       "metadata": {
-        "name": "route-edge",
-        "creationTimestamp": null
+        "name": "${NAME}"
       },
       "spec": {
-        "host": "www.example.com",
+        "host": "${APPLICATION_DOMAIN}",
         "to": {
           "kind": "Service",
-          "name": "frontend"
+          "name": "${NAME}"
         },
         "tls": {
           "termination": "edge",
@@ -98,31 +93,18 @@
           "key": "-----BEGIN PRIVATE KEY-----\nMIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAMrvgu6ZTTefNN7j\njiZbS/xvQjyXjYMN7oVXv76jbX8gjMOmg9m0xoVZZFAE4XyQDuCm47VRx5Qrf/YL\nXmB2VtCFvB0AhXr5zSeWzPwaAPrjA4ebG+LUo24ziS8KqNxrFs1MmNrQUgZyQC6X\nIe1JHXc9t+JlL5UZyZQC1IfaJulDAgMBAAECgYEAnxOjEj/vrLNLMZE1Q9H7PZVF\nWdP/JQVNvQ7tCpZ3ZdjxHwkvf//aQnuxS5yX2Rnf37BS/TZu+TIkK4373CfHomSx\nUTAn2FsLmOJljupgGcoeLx5K5nu7B7rY5L1NHvdpxZ4YjeISrRtEPvRakllENU5y\ngJE8c2eQOx08ZSRE4TkCQQD7dws2/FldqwdjJucYijsJVuUdoTqxP8gWL6bB251q\nelP2/a6W2elqOcWId28560jG9ZS3cuKvnmu/4LG88vZFAkEAzphrH3673oTsHN+d\nuBd5uyrlnGjWjuiMKv2TPITZcWBjB8nJDSvLneHF59MYwejNNEof2tRjgFSdImFH\nmi995wJBAMtPjW6wiqRz0i41VuT9ZgwACJBzOdvzQJfHgSD9qgFb1CU/J/hpSRIM\nkYvrXK9MbvQFvG6x4VuyT1W8mpe1LK0CQAo8VPpffhFdRpF7psXLK/XQ/0VLkG3O\nKburipLyBg/u9ZkaL0Ley5zL5dFBjTV2Qkx367Ic2b0u9AYTCcgi2DsCQQD3zZ7B\nv7BOm7MkylKokY2MduFFXU0Bxg6pfZ7q3rvg8gqhUFbaMStPRYg6myiDiW/JfLhF\nTcFT4touIo7oriFJ\n-----END PRIVATE KEY-----",
           "caCertificate": "-----BEGIN CERTIFICATE-----\nMIIEFzCCAv+gAwIBAgIJALK1iUpF2VQLMA0GCSqGSIb3DQEBBQUAMIGhMQswCQYD\nVQQGEwJVUzELMAkGA1UECAwCU0MxFTATBgNVBAcMDERlZmF1bHQgQ2l0eTEcMBoG\nA1UECgwTRGVmYXVsdCBDb21wYW55IEx0ZDEQMA4GA1UECwwHVGVzdCBDQTEaMBgG\nA1UEAwwRd3d3LmV4YW1wbGVjYS5jb20xIjAgBgkqhkiG9w0BCQEWE2V4YW1wbGVA\nZXhhbXBsZS5jb20wHhcNMTUwMTEyMTQxNTAxWhcNMjUwMTA5MTQxNTAxWjCBoTEL\nMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlNDMRUwEwYDVQQHDAxEZWZhdWx0IENpdHkx\nHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQxEDAOBgNVBAsMB1Rlc3QgQ0Ex\nGjAYBgNVBAMMEXd3dy5leGFtcGxlY2EuY29tMSIwIAYJKoZIhvcNAQkBFhNleGFt\ncGxlQGV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\nw2rK1J2NMtQj0KDug7g7HRKl5jbf0QMkMKyTU1fBtZ0cCzvsF4CqV11LK4BSVWaK\nrzkaXe99IVJnH8KdOlDl5Dh/+cJ3xdkClSyeUT4zgb6CCBqg78ePp+nN11JKuJlV\nIG1qdJpB1J5O/kCLsGcTf7RS74MtqMFo96446Zvt7YaBhWPz6gDaO/TUzfrNcGLA\nEfHVXkvVWqb3gqXUztZyVex/gtP9FXQ7gxTvJml7UkmT0VAFjtZnCqmFxpLZFZ15\n+qP9O7Q2MpsGUO/4vDAuYrKBeg1ZdPSi8gwqUP2qWsGd9MIWRv3thI2903BczDc7\nr8WaIbm37vYZAS9G56E4+wIDAQABo1AwTjAdBgNVHQ4EFgQUugLrSJshOBk5TSsU\nANs4+SmJUGwwHwYDVR0jBBgwFoAUugLrSJshOBk5TSsUANs4+SmJUGwwDAYDVR0T\nBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAaMJ33zAMV4korHo5aPfayV3uHoYZ\n1ChzP3eSsF+FjoscpoNSKs91ZXZF6LquzoNezbfiihK4PYqgwVD2+O0/Ty7UjN4S\nqzFKVR4OS/6lCJ8YncxoFpTntbvjgojf1DEataKFUN196PAANc3yz8cWHF4uvjPv\nWkgFqbIjb+7D1YgglNyovXkRDlRZl0LD1OQ0ZWhd4Ge1qx8mmmanoBeYZ9+DgpFC\nj9tQAbS867yeOryNe7sEOIpXAAqK/DTu0hB6+ySsDfMo4piXCc2aA/eI2DCuw08e\nw17Dz9WnupZjVdwTKzDhFgJZMLDqn37HQnT6EemLFqbcR0VPEnfyhDtZIQ==\n-----END CERTIFICATE-----"
         }
-      },
-      "status": {}
-    },
-    {
-      "kind": "ImageStream",
-      "apiVersion": "v1",
-      "metadata": {
-        "name": "origin-ruby-sample",
-        "creationTimestamp": null
-      },
-      "spec": {},
-      "status": {
-        "dockerImageRepository": ""
       }
     },
     {
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "ruby-22-centos7",
-        "creationTimestamp": null
+        "name": "${NAME}"
       },
-      "spec": {
-        "dockerImageRepository": "centos/ruby-22-centos7"
+      "annotations": {
+          "description": "Keeps track of changes in the application image"
       },
+      "spec": {},
       "status": {
         "dockerImageRepository": ""
       }
@@ -131,68 +113,69 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "ruby-sample-build",
-        "creationTimestamp": null,
+        "name": "${NAME}",
         "labels": {
-          "name": "ruby-sample-build"
+          "name": "${NAME}"
+        },
+        "annotations": {
+          "description": "Defines how to build the application"
         }
       },
       "spec": {
-        "triggers": [
-          {
-            "type": "GitHub",
-            "github": {
-              "secret": "secret101"
-            }
-          },
-          {
-            "type": "Generic",
-            "generic": {
-              "secret": "secret101"
-            }
-          }
-        ],
         "source": {
           "type": "Git",
           "git": {
-            "uri": "https://github.com/openshift/ruby-hello-world.git"
-          }
+            "uri": "${SOURCE_REPOSITORY_URL}",
+            "ref": "${SOURCE_REPOSITORY_REF}"
+          },
+          "contextDir": "${CONTEXT_DIR}"
         },
         "strategy": {
           "type": "Source",
           "sourceStrategy": {
             "from": {
               "kind": "ImageStreamTag",
-              "name": "ruby-22-centos7:latest"
-            },
-            "env": [
-              {
-                "name": "EXAMPLE",
-                "value": "sample-app"
-              }
-            ]
+              "namespace": "${NAMESPACE}",
+              "name": "jboss-eap64-openshift:1.3"
+            }
           }
         },
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "origin-ruby-sample:latest"
+            "name": "${NAME}:latest"
           }
         },
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "GitHub",
+            "github": {
+              "secret": "${GITHUB_WEBHOOK_SECRET}"
+            }
+          },
+          {
+            "type": "Generic",
+            "generic": {
+              "secret": "${GENERIC_WEBHOOK_SECRET}"
+            }
+          }
+        ],
         "postCommit": {
-          "args": ["bundle", "exec", "rake", "test"]
-        },
-        "resources": {}
-      },
-      "status": {
-        "lastVersion": 0
+          "script": ""
+        }
       }
     },
     {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "frontend",
+        "name": "${NAME}",
         "creationTimestamp": null
       },
       "spec": {
@@ -214,7 +197,7 @@
                     "value": "custom_value1"
                   }
                 ],
-                "containerName": "ruby-helloworld"
+                "containerName": "${NAME}"
               }
             },
             "post": {
@@ -229,7 +212,7 @@
                     "value": "custom_value2"
                   }
                 ],
-                "containerName": "ruby-helloworld"
+                "containerName": "${NAME}"
               }
             }
           },
@@ -241,30 +224,30 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "ruby-helloworld"
+                "${NAME}"
               ],
               "from": {
                 "kind": "ImageStreamTag",
-                "name": "origin-ruby-sample:latest"
+                "name": "${NAME}:latest"
               }
             }
           }
         ],
         "replicas": 2,
         "selector": {
-          "name": "frontend"
+          "name": "${NAME}"
         },
         "template": {
           "metadata": {
             "creationTimestamp": null,
             "labels": {
-              "name": "frontend"
+              "name": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "name": "ruby-helloworld",
+                "name": "${NAME}",
                 "image": " ",
                 "ports": [
                   {
@@ -361,8 +344,8 @@
                     "value": "custom_value1"
                   }
                 ],
-                "containerName": "ruby-helloworld-database",
-                "volumes": ["ruby-helloworld-data"]
+                "containerName": "${NAME}-database",
+                "volumes": ["${NAME}-data"]
               }
             },
             "mid": {
@@ -377,8 +360,8 @@
                     "value": "custom_value2"
                   }
                 ],
-                "containerName": "ruby-helloworld-database",
-                "volumes": ["ruby-helloworld-data"]
+                "containerName": "${NAME}-database",
+                "volumes": ["${NAME}-data"]
               }
             },
             "post": {
@@ -393,8 +376,8 @@
                     "value": "custom_value2"
                   }
                 ],
-                "containerName": "ruby-helloworld-database",
-                "volumes": ["ruby-helloworld-data"]
+                "containerName": "${NAME}-database",
+                "volumes": ["${NAME}-data"]
               }
             }
           },
@@ -419,7 +402,7 @@
           "spec": {
             "containers": [
               {
-                "name": "ruby-helloworld-database",
+                "name": "${NAME}-database",
                 "image": "openshift/mysql-55-centos7:latest",
                 "ports": [
                   {
@@ -444,7 +427,7 @@
                 "resources": {},
                 "volumeMounts": [
                   {
-                    "name": "ruby-helloworld-data",
+                    "name": "${NAME}-data",
                     "mountPath": "/var/lib/mysql/data"
                   }
                 ],
@@ -458,7 +441,7 @@
             ],
             "volumes": [
               {
-                "name": "ruby-helloworld-data",
+                "name": "${NAME}-data",
                 "emptyDir": {
                   "medium": ""
                 }
@@ -474,6 +457,47 @@
 
   ],
   "parameters": [
+    {
+      "name": "NAME",
+      "displayName": "Name",
+      "description": "The name assigned to all of the frontend objects defined in this template.",
+      "required": true,
+      "value": "kitchensink"
+    },
+    {
+      "name": "NAMESPACE",
+      "displayName": "Namespace",
+      "description": "The OpenShift Namespace where the ImageStream resides.",
+      "value": "openshift"
+    },
+    {
+      "name": "APPLICATION_DOMAIN",
+      "displayName": "Application Hostname",
+      "description": "The exposed hostname that will route to the service, if left blank a value will be defaulted.",
+      "value": ""
+    },
+    {
+      "name": "SOURCE_REPOSITORY_URL",
+      "displayName": "Git Repository URL",
+      "description": "The URL of the repository with your application source code.",
+      "value": "https://github.com/xcoulon/openshift-kitchensink-html5-mobile.git"
+    },
+    {
+      "name": "SOURCE_REPOSITORY_REF",
+      "displayName": "Git Reference",
+      "description": "Set this to a branch name, tag or other ref of your repository if you are not using the default branch."
+    },
+    {
+      "name": "CONTEXT_DIR",
+      "displayName": "Context Directory",
+      "description": "Set this to the relative path to your project if it is not in the root of your repository."
+    },
+    {
+      "name": "MEMORY_LIMIT",
+      "displayName": "Memory Limit",
+      "description": "Maximum amount of memory the Node.js container can use.",
+      "value": "512Mi"
+    },
     {
       "name": "ADMIN_USERNAME",
       "description": "administrator username",
