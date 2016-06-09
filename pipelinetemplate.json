@@ -291,7 +291,12 @@
         ],
         "roleRef": {
             "name": "edit"
-        }
+        },
+        "userNames": [
+          {
+            "system":"serviceaccount:pipelineproject:default"
+          }
+        ]
     }
 
   ],
