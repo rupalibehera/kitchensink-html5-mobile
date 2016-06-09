@@ -45,7 +45,7 @@
         "strategy": {
           "type": "JenkinsPipeline",
           "jenkinsPipelineStrategy": {
-            "jenkinsfile": "node('agent') {\nstage 'build'\ndef builder = new com.openshift.jenkins.plugins.pipeline.OpenShiftBuilder(\"\", \"${NAME}\", \"pipelineproject\", \"\", \"\", \"\", \"\", \"true\", \"\", \"\")\nstep builder\nstage 'deploy'\ndef deployer = new com.openshift.jenkins.plugins.pipeline.OpenShiftDeployer(\"\",\"${NAME}\",\"pipelineproject\",\"\",\"\")\nstep deployer\n}"
+            "jenkinsfile": "node('agent') {\nstage 'build'\ndef builder = new com.openshift.jenkins.plugins.pipeline.OpenShiftBuilder(\"\", \"${NAME}\", \"${NAME}\", \"\", \"\", \"\", \"\", \"true\", \"\", \"\")\nstep builder\nstage 'deploy'\ndef deployer = new com.openshift.jenkins.plugins.pipeline.OpenShiftDeployer(\"\",\"${NAME}\",\"${NAME}\",\"\",\"\")\nstep deployer\n}"
           }
         }
       }
