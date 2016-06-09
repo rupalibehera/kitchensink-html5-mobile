@@ -17,6 +17,10 @@
         "metadata": {
             "name": "default_edit"
         },
+        "labels" : {
+          "app": "pipeline",
+          "template": "application-template-stibuild"
+        },
         "groupNames": null,
         "subjects": [
             {
@@ -26,6 +30,14 @@
         ],
         "roleRef": {
             "name": "edit"
+        },
+        "subjects": {
+          "kind": "ServiceAccount",
+          "name": "default",
+          "namespace": "pipelineproject"
+        },
+        "userNames": {
+          "system":"serviceaccount:pipelineproject:default"
         }
     },
     {
