@@ -270,35 +270,7 @@
         }
       },
       "status": {}
-    },
-    {
-        "kind": "RoleBinding",
-        "apiVersion": "v1",
-        "metadata": {
-            "name": "default_edit"
-        },
-        "labels" : {
-          "app": "pipeline",
-          "template": "application-template-stibuild"
-        },
-        "groupNames": null,
-        "subjects": [
-            {
-                "kind": "ServiceAccount",
-                "name": "default",
-                "namespace": "pipelineproject"
-            }
-        ],
-        "roleRef": {
-            "name": "edit"
-        },
-        "userNames": [
-          {
-            "system":"serviceaccount:pipelineproject:default"
-          }
-        ]
     }
-
   ],
   "parameters": [
     {
