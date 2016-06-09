@@ -285,20 +285,18 @@
         "subjects": [
             {
                 "kind": "ServiceAccount",
-                "name": "default"
+                "name": "default",
+                "namespace": "pipelineproject"
             }
         ],
         "roleRef": {
             "name": "edit"
         },
-        "subjects": {
-          "kind": "ServiceAccount",
-          "name": "default",
-          "namespace": "pipelineproject"
-        },
-        "userNames": {
-          "system":"serviceaccount:pipelineproject:default"
-        }
+        "userNames": [
+          {
+            "system":"serviceaccount:pipelineproject:default"
+          }
+        ]
     }
 
   ],
