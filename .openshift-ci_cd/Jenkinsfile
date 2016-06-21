@@ -1,0 +1,51 @@
+#!/usr/bin/groovy
+def k8s_token = '<unknown>'
+
+node ('master') {
+    k8s_token = readFile '/var/run/secrets/kubernetes.io/serviceaccount/token'
+}
+
+node('redhatdistortion-maven') {
+    def k8s_namespace = readFile '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+
+    stage 'Checkout SCM'
+    checkout scm
+
+    stage 'Openshift login'
+    sh "oc login https://kubernetes.default/ --token=${k8s_token} --certificate-authority=/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+//  Prepare the deployments so you can see pipeline in console overview when running for the first time
+    sh 'oc delete route kitchensink-dev || true'  // Bugfix for https://github.com/openshift/origin/pull/9425 not getting into latest OpenShift release
+    sh 'oc process -f .openshift-ci_cd/empty-deployment-template.yaml -v "APP_NAME=kitchensink-dev" | oc apply -f -'
+//    sh 'oc process -f .openshift-ci_cd/empty-deployment-template.yaml -v "APP_NAME=kitchensink-test" | oc apply -f -'
+//    sh 'oc process -f .openshift-ci_cd/empty-deployment-template.yaml -v "APP_NAME=kitchensink-prod" | oc apply -f -'
+
+    stage 'Build'
+    sh 'mvn clean compile'
+
+    stage 'Run Unit Tests'
+    sh 'mvn test'
+
+    stage 'Package'
+    sh 'mvn package'
+
+    stage 'Archive artifact'
+    archive 'target/*.war'
+
+    stage 'Create Image'
+    sh 'oc delete bc kitchensink || true'  // Bugfix for https://github.com/openshift/origin/issues/9301
+    sh 'oc process -f https://github.com/tnozicka/openshift-templates/raw/master/binary-build-template.yaml -v "APP_NAME=kitchensink,BUILDER_IMAGE=registry.access.redhat.com/jboss-eap-7/eap70-openshift,OUTPUT_IMAGESTREAM_TAG=kitchensink:latest" | oc apply -f -'
+    sh 'mkdir -p ../artifacts/deployments/ && cp target/*.war ../artifacts/deployments/'
+    sh 'oc start-build kitchensink --from-dir=../artifacts/ --follow'
+
+    stage 'Deploy to dev'
+	sh 'oc delete route kitchensink-dev || true'  // Bugfix for https://github.com/openshift/origin/pull/9425 not getting into latest OpenShift release
+    sh "oc process -f .openshift-ci_cd/deployment-template.yaml -v 'APP_NAME=kitchensink-dev,IMAGE_STREAM_NAMESPACE=${k8s_namespace},IMAGE_STREAM_TAG=kitchensink:latest' | oc apply -f -"
+
+//    stage 'Deploy to test'
+//    input 'Confirm deploying to test.'
+//    sh "oc process -f .openshift-ci_cd/deployment-template.yaml -v 'APP_NAME=kitchensink-test,IMAGE_STREAM_NAMESPACE=${k8s_namespace},IMAGE_STREAM_TAG=kitchensink:latest' | oc apply -f -"
+
+//    stage 'Deploy to production'
+//    input 'Confirm deploying to production.'
+//    sh "oc process -f .openshift-ci_cd/deployment-template.yaml -v 'APP_NAME=kitchensink-prod,IMAGE_STREAM_NAMESPACE=${k8s_namespace},IMAGE_STREAM_TAG=kitchensink:latest' | oc apply -f -"
+}
