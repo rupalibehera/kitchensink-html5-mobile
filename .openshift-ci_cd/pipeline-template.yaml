@@ -27,7 +27,7 @@ objects:
       pipeline.alpha.openshift.io/uses: '[{"name": "kitchensink-dev", "namespace": "", "kind": "DeploymentConfig"},{"name": "kitchensink-test", "namespace": "", "kind": "DeploymentConfig"},{"name": "kitchensink-prod", "namespace": "", "kind": "DeploymentConfig"}]'
   spec:
     triggers:
-      - type: ConfigChange
+#      - type: ConfigChange
       - type: GitHub
         github:
           secret: "${GITHUB_WEBHOOK_SECRET}"
