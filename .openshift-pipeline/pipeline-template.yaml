@@ -20,11 +20,11 @@ objects:
 - kind: BuildConfig
   apiVersion: v1
   metadata:
-    name: kitchensink-pipeline
+    name: kitchensink-html5-app-pipeline
     labels:
-      application: kitchensink
+      app: kitchensink-html5-app
     annotations:
-      pipeline.alpha.openshift.io/uses: '[{"name": "kitchensink-dev", "namespace": "", "kind": "DeploymentConfig"},{"name": "kitchensink-test", "namespace": "", "kind": "DeploymentConfig"},{"name": "kitchensink-prod", "namespace": "", "kind": "DeploymentConfig"}]'
+      pipeline.alpha.openshift.io/uses: '[{"name": "kitchensink-html5-app", "namespace": "", "kind": "DeploymentConfig"}]'
   spec:
     triggers:
 #      - type: ConfigChange
@@ -34,7 +34,7 @@ objects:
     strategy:
       type: JenkinsPipeline
       jenkinsPipelineStrategy:
-        jenkinsfilePath: .openshift-ci_cd/Jenkinsfile
+        jenkinsfilePath: .openshift-pipeline/Jenkinsfile
     source:
       type: git
       git:
