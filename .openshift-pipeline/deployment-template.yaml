@@ -39,10 +39,6 @@ parameters:
     displayName: "Service URL"
     description: ""
     value: ""
-  - name: "MANAGEMENT_SERVICE_URL"
-    displayName: "Management Service URL"
-    description: ""
-    value: ""
 
 objects:
   - kind: "Service"
@@ -64,23 +60,6 @@ objects:
         application: "${APP_NAME}"
       annotations:
         description: "The web server's http port."
-  - kind: "Service"
-    apiVersion: v1
-    metadata:
-      name: management-service
-      labels:
-        application: "management-service"
-    spec:
-      ports:
-        - nodePort: 0
-          port: 9990
-          protocol: TCP
-          targetPort: 9990
-      selector:
-        deploymentConfig: "${APP_NAME}"
-      portalIP: ''
-      type: ClusterIP
-      sessionAffinity: None
   - kind: "Route"
     apiVersion: "v1"
     metadata:
@@ -95,18 +74,6 @@ objects:
       to:
         kind: "Service"
         name: "${APP_NAME}"
-  - kind: "Route"
-    apiVersion: "v1"
-    metadata:
-      name: management-service
-      labels:
-        application: management-service
-    spec:
-      host: "${MANAGEMENT_SERVICE_URL}"
-      path: /
-      to:
-        kind: "Service"
-        name: management-service
   - kind: DeploymentConfig
     apiVersion: v1
     metadata:
