@@ -29,7 +29,7 @@ node('maven') {
 
     sh 'oc process -f https://github.com/tnozicka/openshift-templates/raw/master/binary-build-template.yaml \
        -v "APP_NAME=kitchensink-html5-app,BUILDER_IMAGE=registry.access.redhat.com/jboss-eap-7/eap70-openshift,OUTPUT_IMAGESTREAM_TAG=kitchensink-html5-app:latest"| oc create -f -'
-    sh 'oc start-build kitchensink-html5-app --from-dir=../artifacts/ --follow'
+    sh 'oc start-build kitchensink-html5-app --from-dir=../artifacts/ --wait'
 
     stage 'Deploy'
     sh "oc process -f .openshift-pipeline/deployment-template.yaml -v 'APP_NAME=kitchensink-html5-app,IMAGE_STREAM_NAMESPACE=${k8s_namespace},IMAGE_STREAM_TAG=kitchensink-html5-app:latest' | oc apply -f -"
